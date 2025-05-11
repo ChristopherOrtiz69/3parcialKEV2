@@ -17,4 +17,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/HeroEditor/MilitaryHeroes/Scenes/CharacterEditor [MH] 1.unity
     guid: 7e903250f60223a49b376cbe40a24ffb
+  - enabled: 0
+    path: Assets/Scenes/New Scene.unity
+    guid: 204fb4d1a39e37b428094468fc9bc55c
   m_configObjects: {}
