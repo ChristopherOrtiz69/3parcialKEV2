@@ -1,10 +1,11 @@
-﻿using System;
-using System.Linq;
+﻿using UnityEngine;
 using Assets.HeroEditor.Common.CharacterScripts;
-using Assets.HeroEditor.Common.ExampleScripts;
-using HeroEditor.Common;
-using UnityEngine;
 using UnityEngine.SceneManagement;
+using HeroEditor.Common;
+using System.Linq;
+using System;
+using UnityEditor;
+using Assets.HeroEditor.Common.ExampleScripts;
 
 namespace Assets.HeroEditor.Common.EditorScripts
 {
@@ -120,44 +121,36 @@ namespace Assets.HeroEditor.Common.EditorScripts
         /// <summary>
         /// Test character with demo setup.
         /// </summary>
-        public void Test()
-        {
+       public void Test()
+{
 #if UNITY_EDITOR
-            if (UnityEditor.EditorBuildSettings.scenes.All(i => !i.path.Contains(SampleScene)))
-            {
-                UnityEditor.EditorUtility.DisplayDialog(
-                    "Hero Editor",
-                    $"Please add '{SampleScene}.unity' to Build Settings!",
-                    "OK"
-                );
-                return;
-            }
+    if (UnityEditor.EditorBuildSettings.scenes.All(i => !i.path.Contains(SampleScene)))
+    {
+        UnityEditor.EditorUtility.DisplayDialog(
+            "Hero Editor",
+            $"Please add '{SampleScene}.unity' to Build Settings!",
+            "OK"
+        );
+        return;
+    }
 #endif
 
-            // Asegura que tenga CharacterController
-            var controller = Character.gameObject.GetComponent<CharacterController>();
-            if (controller == null)
-            {
-                controller = Character.gameObject.AddComponent<CharacterController>();
-                controller.center = new Vector3(0, 1.125f);
-                controller.height = 2.5f;
-                controller.radius = 0.75f;
-            }
+    // Asegúrate de que tenga CharacterControl en lugar de CharacterController
+    var control = Character.gameObject.GetComponent<CharacterControl>(); // Usa tu script personalizado CharacterControl
+    if (control == null)
+    {
+        control = Character.gameObject.AddComponent<CharacterControl>(); // Agrega CharacterControl si no está presente
+    }
 
-            // Activar controles
-            Character.GetComponent<WeaponControls>().enabled = true;
+    // Activar controles
+    Character.GetComponent<WeaponControls>().enabled = true;
 
-            if (Character.GetComponent<CharacterControl>() == null)
-            {
-                Character.gameObject.AddComponent<CharacterControl>();
-            }
+    DontDestroyOnLoad(Character); // Mantener personaje entre escenas
+    _temp = Character as Character;
 
-            DontDestroyOnLoad(Character); // Mantener personaje entre escenas
-            _temp = Character as Character;
-
-            Debug.Log("Cambiando a SampleScene con personaje persistente.");
-            SceneManager.LoadScene(SampleScene);
-        }
+    Debug.Log("Cambiando a SampleScene con personaje persistente.");
+    SceneManager.LoadScene(SampleScene);
+}
 
         protected override void SetFirearmParams(SpriteGroupEntry entry)
         {

@@ -1,59 +1,72 @@
-﻿using System;
+﻿using UnityEngine;
 using Assets.HeroEditor.Common.CharacterScripts;
-using UnityEngine;
 
 namespace Assets.HeroEditor.Common.ExampleScripts
 {
-    /// <summary>
-    /// Character move and jump example. Built-in component CharacterController (3D) is used. It can be raplaced by 2D colliders.
+   
     /// </summary>
+    [RequireComponent(typeof(Rigidbody))]
+    [RequireComponent(typeof(Character))]
     public class CharacterControl : MonoBehaviour
     {
-        public KeyCode LeftButton = KeyCode.LeftArrow;
-        public KeyCode RightButton = KeyCode.RightArrow;
-        public KeyCode JumpButton = KeyCode.Space;
+        public float moveSpeed = 3.5f;
+        public KeyCode upKey = KeyCode.W;
+        public KeyCode downKey = KeyCode.S;
+        public KeyCode leftKey = KeyCode.A;
+        public KeyCode rightKey = KeyCode.D;
 
-        private Vector3 _speed = Vector3.zero;
         private Character _character;
-        private CharacterController _controller; // https://docs.unity3d.com/ScriptReference/CharacterController.html
+        private Rigidbody _rb;
+        private Vector2 _input;
 
-		public void Start()
+        void Start()
         {
+            // Obtener referencias
             _character = GetComponent<Character>();
+            _rb = GetComponent<Rigidbody>();
+
+            // Validaciones
+            if (_character == null)
+                Debug.LogError("El componente 'Character' no se ha encontrado.");
+            if (_rb == null)
+                Debug.LogError("El componente 'Rigidbody' no se ha encontrado.");
+
+           
+            _rb.useGravity = false;
+
+            // Activar animación inicial
             _character.Animator.SetBool("Ready", true);
-            _controller = GetComponent<CharacterController>();
-        }
- 
-        public void Update()
-        {
-            Move(Input.GetKey(LeftButton), Input.GetKey(RightButton), Input.GetKey(JumpButton));
         }
 
-        public void Move(bool left, bool right, bool jump)
+        void Update()
         {
-            if (_controller.isGrounded)
+            // Leer input
+            _input = Vector2.zero;
+
+            if (Input.GetKey(upKey)) _input.y += 1;
+            if (Input.GetKey(downKey)) _input.y -= 1;
+            if (Input.GetKey(leftKey)) _input.x -= 1;
+            if (Input.GetKey(rightKey)) _input.x += 1;
+
+            // Animaciones
+            if (_character != null)
             {
-                _speed = Vector3.zero;
+                _character.Animator.SetBool("Run", _input != Vector2.zero);
 
-                if (left) _speed.x = -5;
-                if (right) _speed.x = 5;
-                if (jump) _speed.y = 10;
-                if (_speed.magnitude > 0) Turn(_speed.x);
-            }
-
-            _character.Animator.SetBool("Run", _controller.isGrounded && Math.Abs(_speed.x) > 0.01f); // Go to animator transitions for more details
-            _character.Animator.SetBool("Jump", !_controller.isGrounded);
-
-            _speed.y -= 25 * Time.deltaTime; // Depends on project physics settings
-            _controller.Move(_speed * Time.deltaTime);
-        }
-
-        public void Turn(float direction)
-        {
-            if (direction * transform.localScale.x < 0)
-            {
-                transform.localScale = new Vector3(Mathf.Sign(direction), 1, 1);
+                if (_input.x != 0)
+                    transform.localScale = new Vector3(Mathf.Sign(_input.x), 1, 1);
             }
         }
+
+        void FixedUpdate()
+        {
+            if (_rb != null && _input != Vector2.zero)
+            {
+                // Movimiento en el plano X-Y (2D)
+                Vector3 direction = new Vector3(_input.x, _input.y, 0).normalized;
+                _rb.MovePosition(transform.position + direction * moveSpeed * Time.fixedDeltaTime);
+            }
+        }
+
     }
 }
